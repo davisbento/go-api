@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/davisbento/go-api/core/articles"
+	"github.com/davisbento/go-api/database"
 	"github.com/gorilla/mux"
 )
 
@@ -45,6 +46,8 @@ func handleRequests() {
 }
 
 func main() {
+	database.Connect()
+
 	Articles = []articles.Article{
 		{Id: "1", Title: "Hello", Desc: "Article Description", Content: "Article Content"},
 		{Id: "2", Title: "Hello 2", Desc: "Article Description", Content: "Article Content"},
