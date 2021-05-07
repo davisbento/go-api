@@ -9,6 +9,7 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/davisbento/go-api/core/articles"
+	"github.com/davisbento/go-api/core/users"
 	"github.com/davisbento/go-api/database"
 	"github.com/davisbento/go-api/web/handlers"
 	"github.com/gorilla/mux"
@@ -16,7 +17,8 @@ import (
 
 func main() {
 	db := database.Connect()
-	service := articles.NewService(db)
+	aService := articles.NewService(db)
+	uService := users.NewService(db)
 	r := mux.NewRouter()
 
 	n := negroni.New(
@@ -24,7 +26,8 @@ func main() {
 	)
 
 	//handlers
-	handlers.MakeArticlesHandler(r, n, service)
+	handlers.MakeArticlesHandler(r, n, aService)
+	handlers.MakeUsersHandlers(r, n, uService)
 
 	http.Handle("/", r)
 
