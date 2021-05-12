@@ -20,7 +20,7 @@ func (s *Service) GetAll() ([]*Article, error) {
 	var result []*Article
 
 	//vamos sempre usar a conexão que está dentro do Service
-	rows, err := s.DB.Query("select id, title, description, content from article")
+	rows, err := s.DB.Query("select id, title, description, content from articles")
 	//se existe erro a função deve retorná-lo e ele vai ser tratado
 	//por quem chamou o pacote. Essa é uma boa prática em Go
 	if err != nil {
