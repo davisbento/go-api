@@ -124,13 +124,13 @@ func loginUser(service users.UseCase) http.Handler {
 			w.Write(formatJSONError(err.Error()))
 			return
 		}
-		created, err := service.Login(&u)
+		token, err := service.Login(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(formatJSONError(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(created)
+		json.NewEncoder(w).Encode(token)
 	})
 }

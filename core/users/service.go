@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/davisbento/go-api/core/jwtManager"
 	"github.com/davisbento/go-api/core/utils"
 )
 
@@ -12,16 +13,12 @@ type UserCreated struct {
 	Email string `json:"email"`
 }
 
-type LoginResponse struct {
-	AuthToken string `json:"authToken"`
-}
-
 type UseCase interface {
 	GetAll() ([]*User, error)
 	Get(Id int64) (*User, error)
 	getByEmail(email string) (*User, error)
 	Store(u *User) (UserCreated, error)
-	Login(u *UserLogin) (LoginResponse, error)
+	Login(u *UserLogin) (string, error)
 }
 
 type Service struct {
@@ -108,23 +105,25 @@ func (s *Service) getByEmail(email string) (*User, error) {
 	return &u, nil
 }
 
-func (s *Service) Login(u *UserLogin) (LoginResponse, error) {
-	response := LoginResponse{}
-
+func (s *Service) Login(u *UserLogin) (string, error) {
 	user, err := s.getByEmail(u.Email)
 	if err != nil {
-		return response, err
+		return "", err
 	}
 
 	isValid := utils.ComparePasswords(user.Password, u.Password)
 
 	if !isValid {
-		return response, fmt.Errorf("password-invalid")
+		return "", fmt.Errorf("password-invalid")
 	}
 
-	response.AuthToken = "3123123jdajaja"
+	token, err := jwtManager.GenerateToken(user.Id)
 
-	return response, nil
+	if err != nil {
+		return "", nil
+	}
+
+	return token, nil
 }
 
 func NewService(db *sql.DB) *Service {
