@@ -2,6 +2,7 @@ package users
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/davisbento/go-api/core/utils"
 )
@@ -11,10 +12,16 @@ type UserCreated struct {
 	Email string `json:"email"`
 }
 
+type LoginResponse struct {
+	AuthToken string `json:"authToken"`
+}
+
 type UseCase interface {
 	GetAll() ([]*User, error)
 	Get(Id int64) (*User, error)
+	getByEmail(email string) (*User, error)
 	Store(u *User) (UserCreated, error)
+	Login(u *UserLogin) (LoginResponse, error)
 }
 
 type Service struct {
@@ -41,7 +48,19 @@ func (s *Service) GetAll() ([]*User, error) {
 }
 
 func (s *Service) Get(id int64) (*User, error) {
-	return nil, nil
+	var u User
+
+	stmt, err := s.DB.Prepare("select id, name, email from users where id = ?")
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+	err = stmt.QueryRow(id).Scan(&u.Id, &u.Name, &u.Email)
+	if err != nil {
+		return nil, err
+	}
+	//deve retornar a posição da memória de b
+	return &u, nil
 }
 
 func (s *Service) Store(u *User) (UserCreated, error) {
@@ -74,6 +93,38 @@ func (s *Service) Store(u *User) (UserCreated, error) {
 	user.Name = u.Name
 	user.Email = u.Email
 	return user, nil
+}
+
+func (s *Service) getByEmail(email string) (*User, error) {
+	var u User
+
+	sqlStatement := `SELECT id, name, email, password FROM users WHERE email=$1`
+	row := s.DB.QueryRow(sqlStatement, email)
+	err := row.Scan(&u.Id, &u.Name, &u.Email, &u.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return &u, nil
+}
+
+func (s *Service) Login(u *UserLogin) (LoginResponse, error) {
+	response := LoginResponse{}
+
+	user, err := s.getByEmail(u.Email)
+	if err != nil {
+		return response, err
+	}
+
+	isValid := utils.ComparePasswords(user.Password, u.Password)
+
+	if !isValid {
+		return response, fmt.Errorf("password-invalid")
+	}
+
+	response.AuthToken = "3123123jdajaja"
+
+	return response, nil
 }
 
 func NewService(db *sql.DB) *Service {

@@ -20,9 +20,14 @@ func MakeUsersHandlers(r *mux.Router, n *negroni.Negroni, service users.UseCase)
 		negroni.Wrap(getUser(service)),
 	)).Methods("GET", "OPTIONS")
 
+	r.Handle("/v1/users/login", n.With(
+		negroni.Wrap(loginUser(service)),
+	)).Methods("POST", "OPTIONS")
+
 	r.Handle("/v1/users", n.With(
 		negroni.Wrap(storeUser(service)),
 	)).Methods("POST", "OPTIONS")
+
 }
 
 func getAllUsers(service users.UseCase) http.Handler {
@@ -98,6 +103,28 @@ func storeUser(service users.UseCase) http.Handler {
 		}
 		//@TODO precisamos validar os dados antes de salvar na base de dados. Pergunta: Como fazer isso?
 		created, err := service.Store(&u)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write(formatJSONError(err.Error()))
+			return
+		}
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(created)
+	})
+}
+
+func loginUser(service users.UseCase) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		var u users.UserLogin
+		err := json.NewDecoder(r.Body).Decode(&u)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write(formatJSONError(err.Error()))
+			return
+		}
+		created, err := service.Login(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(formatJSONError(err.Error()))
