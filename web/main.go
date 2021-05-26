@@ -9,6 +9,7 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/davisbento/go-api/core/articles"
+	"github.com/davisbento/go-api/core/jwtManager"
 	"github.com/davisbento/go-api/core/users"
 	"github.com/davisbento/go-api/database"
 	"github.com/davisbento/go-api/web/handlers"
@@ -23,6 +24,7 @@ func main() {
 
 	n := negroni.New(
 		negroni.NewLogger(),
+		jwtManager.JwtAuth(),
 	)
 
 	//handlers

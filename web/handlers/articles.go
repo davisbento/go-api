@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/davisbento/go-api/core/articles"
+	"github.com/davisbento/go-api/core/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -37,14 +38,14 @@ func getAllArticlesJSON(w http.ResponseWriter, service articles.UseCase) {
 	all, err := service.GetAll()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(formatJSONError(err.Error()))
+		w.Write(utils.FormatJSONError(err.Error()))
 		return
 	}
 	//vamos converter o resultado em JSON e gerar a resposta
 	err = json.NewEncoder(w).Encode(all)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(formatJSONError("Erro convertendo em JSON"))
+		w.Write(utils.FormatJSONError("Erro convertendo em JSON"))
 		return
 	}
 }
@@ -65,20 +66,20 @@ func getArticle(service articles.UseCase) http.Handler {
 		id, err := strconv.ParseInt(vars["id"], 10, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		b, err := service.Get(id)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		//vamos converter o resultado em JSON e gerar a resposta
 		err = json.NewEncoder(w).Encode(b)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(formatJSONError("Erro convertendo em JSON"))
+			w.Write(utils.FormatJSONError("Erro convertendo em JSON"))
 			return
 		}
 	})

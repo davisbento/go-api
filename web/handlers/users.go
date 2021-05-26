@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/negroni"
 	"github.com/davisbento/go-api/core/users"
+	"github.com/davisbento/go-api/core/utils"
 	"github.com/gorilla/mux"
 )
 
@@ -41,13 +42,13 @@ func getAllUsersJSON(w http.ResponseWriter, service users.UseCase) {
 	all, err := service.GetAll()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(formatJSONError(err.Error()))
+		w.Write(utils.FormatJSONError(err.Error()))
 		return
 	}
 	err = json.NewEncoder(w).Encode(all)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(formatJSONError("Erro convertendo em JSON"))
+		w.Write(utils.FormatJSONError("Erro convertendo em JSON"))
 		return
 	}
 }
@@ -60,19 +61,19 @@ func getUser(service users.UseCase) http.Handler {
 		id, err := strconv.ParseInt(vars["id"], 10, 64)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		u, err := service.Get(id)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		err = json.NewEncoder(w).Encode(u)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(formatJSONError("Erro convertendo em JSON"))
+			w.Write(utils.FormatJSONError("Erro convertendo em JSON"))
 			return
 		}
 	})
@@ -98,14 +99,14 @@ func storeUser(service users.UseCase) http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		//@TODO precisamos validar os dados antes de salvar na base de dados. Pergunta: Como fazer isso?
 		created, err := service.Store(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
@@ -121,13 +122,13 @@ func loginUser(service users.UseCase) http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		token, err := service.Login(&u)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(formatJSONError(err.Error()))
+			w.Write(utils.FormatJSONError(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
